@@ -15,6 +15,16 @@
   * dimensions (These represent the character's size in the video game)
   * destroy() // prototype method that returns: `${this.name} was removed from the game.`
 */
+function GameObject(attributes) {
+  this.createdAt = attributes.createdAt;
+  this.name = attributes.name;
+  this.dimensions = attributes.dimensions;
+}
+
+// prototype
+GameObject.prototype.destroy = function() {
+  return `${this.name} was removed from the game`;
+};
 
 /*
   === CharacterStats ===
@@ -22,6 +32,16 @@
   * takeDamage() // prototype method -> returns the string '<object name> took damage.'
   * should inherit destroy() from GameObject's prototype
 */
+function CharacterStats(attributes) {
+  GameObject.call(this, attributes); // implicit
+  this.healthPoints = attributes.healthPoints;
+}
+
+CharacterStats.prototype = Object.create(GameObject.prototype); // inheritance destroy() from gameObj
+
+CharacterStats.prototype.takeDamage = function() {
+  return `${this.name} took damage`;
+}
 
 /*
   === Humanoid (Having an appearance or character resembling that of a human.) ===
@@ -32,7 +52,18 @@
   * should inherit destroy() from GameObject through CharacterStats
   * should inherit takeDamage() from CharacterStats
 */
- 
+function Humanoid(attributes) {
+  CharacterStats.call(this, attributes) // implicit
+  this.team = attributes.team;
+  this.weapons = attributes.weapons;
+  this.language = attributes.language;
+} 
+
+Humanoid.prototype = Object.create(CharacterStats.prototype) // inheritance
+Humanoid.prototype.greet = function () {
+  return `${this.name} offers a greeting in ${this.language}.`
+}
+
 /*
   * Inheritance chain: GameObject -> CharacterStats -> Humanoid
   * Instances of Humanoid should have all of the same properties as CharacterStats and GameObject.
@@ -41,7 +72,7 @@
 
 // Test you work by un-commenting these 3 objects and the list of console logs below:
 
-/*
+
   const mage = new Humanoid({
     createdAt: new Date(),
     dimensions: {
@@ -92,7 +123,7 @@
     language: 'Elvish',
   });
 
-  console.log(mage.createdAt); // Today's date
+  console.log(mage.createdAt); // Today's date Wed July 24 2019
   console.log(archer.dimensions); // { length: 1, width: 2, height: 4 }
   console.log(swordsman.healthPoints); // 15
   console.log(mage.name); // Bruce
@@ -102,9 +133,83 @@
   console.log(archer.greet()); // Lilith offers a greeting in Elvish.
   console.log(mage.takeDamage()); // Bruce took damage.
   console.log(swordsman.destroy()); // Sir Mustachio was removed from the game.
-*/
+
 
   // Stretch task: 
   // * Create Villain and Hero constructor functions that inherit from the Humanoid constructor function.  
+
+  // Villain
+  function Villain(attributes) {
+    Humanoid.call(this, attributes) // implicit
+  }
+  Villain.prototype = Object.create(Humanoid.prototype); // inheritance
+
+  // Hero
+  function Hero(attributes) {
+    Humanoid.call(this, attributes); // implicit
+  }
+  Hero.prototype = Object.create(Humanoid.prototype); // inheritance
+
   // * Give the Hero and Villains different methods that could be used to remove health points from objects which could result in destruction if health gets to 0 or drops below 0;
+
+  // Hero
+  Hero.prototype.removeHealth = function () {
+    this.healthPoints -= 5;
+    console.log( `${this.healthPoints}`);
+  }
+
+  // Villain
+  Villain.prototype.removeHealth = function () {
+    this.healthPoints -= 5;
+    console.log( `${this.healthPoints}`);
+  }
+
   // * Create two new objects, one a villain and one a hero and fight it out with methods!
+  
+  // Hero
+  const hero = new Hero({
+    createdAt: new Date(),
+    dimensions: {
+      length: 2, 
+      width: 4, 
+      height: 6,
+    },
+    healthPoints: 200,
+    name: 'Comrade The Great',
+    team: 'Kingdom Pug',
+    weapons: [
+      'fangs',
+      'fishy butt',
+    ],
+    language: 'Puggish',
+  });
+
+  // Villain
+  const villain = new Villain({
+    createdAt: new Date(),
+    dimensions: {
+      length: 2, 
+      width: 4,
+      height: 6,
+    },
+    healthPoints: 50,
+    name: 'The Evil Chairman Meow',
+    team: 'The Prowler in the Tower',
+    weapons: [
+      'claws',
+      'dingle berries',
+    ],
+    language: 'Meowish',
+  });
+
+  // Battle!
+  Humanoid.prototype.battle = function (opponent) {
+    console.log(opponent.healthPoints);
+    let opHealth = opponent.healthPoints;
+    for (i = 0; i < opHealth; i++) {
+      opponent.removeHealth();
+    }
+    return opponent.healthPoints;
+  }
+
+  console.log(hero.battle(villain));
